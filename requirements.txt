@@ -1,0 +1,11 @@
+fastapi
+
+uvicorn
+
+pandas
+
+scikit-learn
+
+pyttsx3
+
+pydantic
