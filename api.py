@@ -119,11 +119,11 @@ def speak_regional_text(prompt: RegionalPrompt):
         source = "Direct Pass-through / Live Bhashini Pipeline"
     
     # 2. Trigger audio playback
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 135)  # Measured pace for elderly comprehension
-    engine.say(translated_text)
-    engine.runAndWait()
-    engine.stop()
+    # engine = pyttsx3.init()
+    # engine.setProperty('rate', 135)  # Measured pace for elderly comprehension
+    # engine.say(translated_text)
+    # engine.runAndWait()
+    # engine.stop()
     
     return {
         "original_text": prompt.text_to_speak,
