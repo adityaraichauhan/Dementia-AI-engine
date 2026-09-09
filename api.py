@@ -116,7 +116,29 @@ def speak_regional_text(prompt: RegionalPrompt):
         translated_text = OFFLINE_TRANSLATIONS[lang][original_text]
         source = "Offline Regional Dictionary"
     else:
-        source = "Direct Pass-through / Live Bhashini Pipeline"
+        try:
+            import requests
+            headers = {
+                "Content-Type": "application/json",
+                "userID": BHASHINI_USER_ID,
+                "ulcaApiKey": BHASHINI_API_KEY,
+                "Authorization": BHASHINI_INFERENCE_KEY
+            }
+            payload = {
+                "pipelineTasks": [{"taskType": "translation", "config": {"language": {"sourceLanguage": "en", "targetLanguage": lang}}}],
+                "inputData": {"input": [{"source": original_text}]}
+            }
+            
+            response = requests.post(BHASHINI_COMPUTE_URL, json=payload, headers=headers, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                translated_text = data["pipelineResponse"][0]["output"][0]["target"]
+                source = "Official Bhashini API (Live)"
+            else:
+                source = f"Bhashini Server Error: {response.status_code}"
+        except Exception:
+            source = "Bhashini Request Failed - Network Error"
     
     # 2. Trigger audio playback
     # engine = pyttsx3.init()
