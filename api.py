@@ -153,3 +153,55 @@ def speak_regional_text(prompt: RegionalPrompt):
         "spoken_text": translated_text,
         "translation_engine": source
     }
+
+
+@app.post("/synthesize_speech")
+def synthesize_speech(prompt: RegionalPrompt):
+    lang = prompt.target_language.lower()
+    original_text = prompt.text_to_speak.lower()
+    
+    try:
+        import requests
+        headers = {
+            "Content-Type": "application/json",
+            "userID": BHASHINI_USER_ID,
+            "ulcaApiKey": BHASHINI_API_KEY,
+            "Authorization": BHASHINI_INFERENCE_KEY
+        }
+        
+        # We chain TWO tasks: Translation first, then TTS
+        payload = {
+            "pipelineTasks": [
+                {
+                    "taskType": "translation", 
+                    "config": {"language": {"sourceLanguage": "en", "targetLanguage": lang}}
+                },
+                {
+                    "taskType": "tts", 
+                    "config": {"language": {"sourceLanguage": lang}, "gender": "female"}
+                }
+            ],
+            "inputData": {"input": [{"source": original_text}]}
+        }
+        
+        # Timeout increased to 10s because audio generation takes slightly longer
+        response = requests.post(BHASHINI_COMPUTE_URL, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Extract both the text and the raw audio data
+            translated_text = data["pipelineResponse"][0]["output"][0]["target"]
+            audio_base64 = data["pipelineResponse"][1]["audio"][0]["audioContent"]
+            
+            return {
+                "original_text": original_text,
+                "target_language": lang,
+                "spoken_text": translated_text,
+                "audio_base64": audio_base64,
+                "engine": "Official Bhashini API (Live Voice)"
+            }
+        else:
+            return {"error": f"Bhashini API Error: {response.status_code}"}
+            
+    except Exception as e:
+        return {"error": f"Audio Request Failed: {str(e)}"}
