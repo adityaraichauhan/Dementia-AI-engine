@@ -137,8 +137,8 @@ def speak_regional_text(prompt: RegionalPrompt):
                 source = "Official Bhashini API (Live)"
             else:
                 source = f"Bhashini Server Error: {response.status_code}"
-        except Exception:
-            source = "Bhashini Request Failed - Network Error"
+        except Exception as e:
+            print(f"Translation Error: {e}")
     
     # 2. Trigger audio playback
     # engine = pyttsx3.init()
